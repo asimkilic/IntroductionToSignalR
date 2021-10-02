@@ -16,7 +16,7 @@
           connection
             .invoke("SendMessageAsync", message)
             .catch((error) =>
-              console.log(`Mesaj gönderilirken hata oluştur ${error}`)
+              console.log(`Mesaj gönderilirken hata oluştu ${error}`)
             );
         });
         connection.on("receiveMessage", (message) => {
