@@ -14,3 +14,13 @@ SignalR 2011 yılında Microsoft tarafından geliştirilmiştir. 2013 yılında 
 
 'Hub' adı verilen merkezi bir yapı üzerinden proje şekillenmektedir. Hub aslında bir class'tır ve içerisinde tanımlanan bir metoda abone olan/çağıran Client'lar ilgili hub üzerinden iletilen veriyi alacaktır.
 Oluşturulan class isimlerinin 'Hub' ile bitmesi zorunluluğu yoktur fakat genel kullanım o şekildedir ve Hub sınıfından miras almak zorundadır.
+
+```cs
+ public class MyHub : Hub
+    {
+        public async Task SendMessageAsync(string message)
+        {
+            await Clients.All.SendAsync("receiveMessage", message);
+        }
+    }
+```
