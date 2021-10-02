@@ -1,6 +1,7 @@
 ## SIGNALR ##
 Client-Server arasında klasik şekilde request-response türünde olan haberleşmenin tam aksine eş zamanlı olarak yapılan haberleşme yöntemidir.
 Yerine göre klasik yöntem kullanılarak yapılan (request-response) işlemler hem zaman hemde performans açısından maliyetli olmaktadır.
+
 İhtiyaç : Sayfaların dinamik olarak yenilenmesi.
 
 Günümüz imkanlarını değerlendirecek olursak klasik haberleşme yaklaşımının pek yeterli olmadığı görülmektedir buna çözüm olarak farklı kütüphanelere ve hatta protokollere olan ihtiyaç kaçınılmazdır. Anlık veriler ile çalışılacak projelerde Real-Time hizmet verecek bir teknolojiye ihtiyaç olduğu ve HTTP'den farklı olarak  TCP protokolünü benimseyen Web Socket alt yapılı sistemlerin kullanılması gerekliliği ortadadır.
