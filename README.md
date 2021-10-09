@@ -73,3 +73,105 @@ Durum fonksiyonlarına connection üzerinden erişim sağlarız.
    } );
   connection.onclose((connectionId) => { } );
 ```
+
+Client'lar tarafından Hub'lara yapılan bağlantıları yönetmek ve izleyebilmek için geliştirilmiş bağlantı olayları vardır.
+Sisteme herhangi bir Client bağlantı sağladığında sistem tarafından bir event gerçekleştirilir. Bu gerçekleşen event ile bütün Client'lara haber verebiliyoruz. Sistemden bir Client bağlantı kopardığında da başka bir event tetikleniyor bu event sayesinde de diğer Client'ları uyarabiliyoruz. Bu olaylara bağlantı olayları denir.
+
+```cs
+
+ OnConnectedAsync()  // Yeni bağlantı sağlandığında tetiklenir.
+ OnDisconnectedAsync(Exception exception)  // Mevcut bir bağlantı koptuğunda tetiklenir.
+ ```
+Hub'a bağlantı sağlayan  bir Client söz konusu olduğunda OnConnectedAsync fonksiyonun devreye sokabilmek ve aynı şekilde bağlantı koptuğunda da OnDisconnectedAsync fonksiyonunu devreye sokabilmek için Hub sınıfndan faydalanırız. Hub sınıfımız base class olduğundan dolayı kendi içinde virtual olarak tanımlanan bu fonksiyonları override ederek özelleştirebiliriz.
+
+```cs
+    //
+    // Summary:
+    //     A base class for a SignalR hub.
+    public abstract class Hub : IDisposable
+    {
+        protected Hub();
+
+        public IHubCallerClients Clients { get; set; }
+     
+        public HubCallerContext Context { get; set; }
+   
+        public IGroupManager Groups { get; set; }
+
+        public void Dispose();
+     
+        public virtual Task OnConnectedAsync();
+     
+        public virtual Task OnDisconnectedAsync(Exception? exception);
+    
+        protected virtual void Dispose(bool disposing);
+ ```
+ 
+ Bağlantı olayları SignalR uygulamalarında loglama için oldukça elverişlidir.
+ Mevcut bağlantıda olan HTML bazlı bir kullanıcı sayfayı yenilediğinde önce mevcut bağlantı kopartılır daha sonra yeni bir bağlantı açılır.
+
+ Bağlantı kuran yada kopartan Client ile ilgili bilgilere Server tarafında ulaşabiliyoruz. Bağlantı sağlandığı zaman Hub sınıfından propety olarak gelen Context sınıfı üzerinden mevcut Client'ın bilgilerine erişebiliyoruz.
+
+ Context yapısı;
+```cs
+    //
+        // Summary:
+        //     Gets the connection ID.
+        public abstract string ConnectionId { get; }
+        //
+        // Summary:
+        //     Gets the user identifier.
+        public abstract string? UserIdentifier { get; }
+        //
+        // Summary:
+        //     Gets the user.
+        public abstract ClaimsPrincipal? User { get; }
+        //
+        // Summary:
+        //     Gets a key/value collection that can be used to share data within the scope of
+        //     this connection.
+        public abstract IDictionary<object, object?> Items { get; }
+        //
+        // Summary:
+        //     Gets the collection of HTTP features available on the connection.
+        public abstract IFeatureCollection Features { get; }
+        //
+        // Summary:
+        //     Gets a System.Threading.CancellationToken that notifies when the connection is
+        //     aborted.
+        public abstract CancellationToken ConnectionAborted { get; }
+
+        //
+        // Summary:
+        //     Aborts the connection.
+        public abstract void Abort();
+```
+ConnectionId: Hub'a bağlantı gerçekleştiren Client'lara sistem tarafından verilen unique değerlerdir.
+Örnek ConnectionId: 'JRaO1CBlUaQvHD_1-dzaYw' 
+
+Hali hazırda bağlanmış, yeni bağlanan veya bağlantısını kopartmış Client'ları kontol edebilmek için In Memory'de bir listeye ihtiyacımız var. Bir kullanıcı bağlantı sağladığında bu listeye ekleyip, bağlantı koparttığında bu listeden çıkartabiliriz. Her bir işlem sonrasında tüm Client'lara listeyi tekrar göndererek bütün Client'larda güncel liste olmasını sağlamış oluruz.
+```cs
+       public class MyHub : Hub
+    {
+        static List<string> clients = new List<string>();
+        public override async Task OnConnectedAsync()
+        {
+            clients.Add(Context.ConnectionId);
+            await Clients.All.SendAsync("clients", clients);
+            await Clients.All.SendAsync("userJoined", Context.ConnectionId);
+
+        }
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            clients.Remove(Context.ConnectionId);
+            await Clients.All.SendAsync("clients", clients);
+            await Clients.All.SendAsync("userLeaved", Context.ConnectionId); 
+        }
+    }
+```
+Bir bağlantı sağlandığında/kopartıldığında  Client'larda bulunan clients fonksiyonu tetiklenmiş olacaktır.
+
+```js
+  connection.on("clients", (clientsData) => { });
+     
+```

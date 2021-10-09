@@ -13,7 +13,6 @@
         async function start() {
           try {
             await connection.start();
-          
           } catch (error) {
             setTimeout(() => start(), 2000);
           }
@@ -21,38 +20,53 @@
         //  connection.start();
         start();
 
+        function animation() {
+          durum.fadeIn(2000, () => {
+            setTimeout(() => {
+              durum.fadeOut(2000);
+            }, 2000);
+          });
+        }
+
         const durum = $("#durum");
         connection.onreconnecting((error) => {
           durum.css("background-color", "blue");
           durum.css("color", "white");
           durum.html("Bağlantı kuruluyor...");
-          durum.fadeIn(2000, () => {
-            setTimeout(() => {
-              durum.fadeOut(2000);
-            }, 2000);
-          });
+          animation();
         });
         connection.onreconnected((connectionId) => {
           durum.css("background-color", "green");
           durum.css("color", "white");
           durum.html("Bağlantı kuruldu...");
-          durum.fadeIn(2000, () => {
-            setTimeout(() => {
-              durum.fadeOut(2000);
-            }, 2000);
-          });
+          animation();
         });
         connection.onclose((connectionId) => {
           durum.css("background-color", "red");
           durum.css("color", "white");
           durum.html("Bağlanılamadı...");
-          durum.fadeIn(2000, () => {
-            setTimeout(() => {
-              durum.fadeOut(2000);
-            }, 2000);
-          });
+          animation();
+        });
+        connection.on("userJoined", (connectionId) => {
+          durum.css("background-color", "green");
+          durum.css("color", "white");
+          durum.html(`${connectionId} bağlandı.`);
+          animation();
+        });
+        connection.on("userLeaved", (connectionId) => {
+          durum.html(`${connectionId} ayrıldı.`);
+          durum.css("background-color", "red");
+          durum.css("color", "white");
+          animation();
         });
 
+        connection.on("clients", (clientsData) => {
+          let text="";
+          $.each(clientsData, (index, item) => {
+            text+=`<li>${item}</li>`;
+          });
+          $("#clients").html(text);
+        });
         $("#btnGonder").click(() => {
           let message = $("#txtMessage").val();
           connection
@@ -73,5 +87,8 @@
     <button id="btnGonder">Gönder</button>
 
     <div id="mesajlar"></div>
+    <div>
+      <ul id="clients"></ul>
+    </div>
   </body>
 </html>
