@@ -69,7 +69,7 @@ Durum fonksiyonlarına connection üzerinden erişim sağlarız.
 ```cs
   connection.onreconnecting((error) => { } );
   connection.onreconnected((connectionId) => {
-      // Client'ları biribirinden ayırmak için her bir bağlantıya bir onnectionId ataması yapılır, bize geriye bu connectionId'yi döndürecektir.
+      // Client'ları birbirinden ayırmak için her bir bağlantıya bir connectionId ataması yapılır, bize geriye bu connectionId'yi döndürecektir.
    } );
   connection.onclose((connectionId) => { } );
 ```
